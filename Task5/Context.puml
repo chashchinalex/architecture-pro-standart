@@ -1,0 +1,28 @@
+@startuml
+title Клиент-Банк Context Diagram
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(person, "Потенциальный Клиент", "Создает заявку")
+Person(customer, "Клиент", "Создает заявку")
+Person(manager, "Сотрудник офиса", "Создает заявку")
+
+System(bank, "Банк клиент", "Данные по предложениям о кредитах. Форма заявки")
+System(homePage, "Сайт банка", "Данные по предложениям о кредите. Форма заявки")
+System(abc, "АБС", "Данные о персональных предложениях, условиях депозитов, данные по заявкам")
+System(creditPipeline, "Кредитный конвейер", "")
+
+System_Ext(sms, "SMS-шлюз")
+System_Ext(scoring, "Система скоринга")
+
+Rel(person, homePage, "Выбирает вариант депозита, создает обращение в колл центр")
+Rel(customer, bank, "Выбирает вариант депозита, создает обращение в колл центр")
+Rel(manager, abc, "Ведет заявки")
+Rel(abc, sms, "Информирование клиента о статусе заявки")
+Rel(homePage, abc, "Новые заявки")
+Rel(homePage, creditPipeline, "Условия по кредитам")
+Rel(abc, creditPipeline, "Кредитная история")
+Rel(creditPipeline, scoring, "Кредитная история")
+Rel(bank, creditPipeline, "Расчет условий")
+Rel(bank, abc, "Заявка на кредит")
+@enduml

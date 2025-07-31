@@ -1,0 +1,44 @@
+
+@startuml Container
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+title C4 - Диаграмма контейнеров: Открытие депозитов (MVP)
+
+Person(client, "Клиент", "Работает с интерфейсами банка")
+Person(backOffice, "Менеджер бэк-офиса", "Обрабатывает заявки вручную")
+
+System_Boundary(ib, "Интернет-банк") {
+  Container(ui, "Web/Mobile UI", "Browser/Client", "Интерфейс пользователя")
+  Container(frontend, "Frontend Gateway", "Web сервер", "Обработка клиентских запросов")
+  Container(depositModule, "Модуль заявок", "Java/Node", "Форма и логика подачи заявок")
+}
+
+System_Boundary(deposit, "Сервис заявок на депозиты") {
+  Container(api, "REST API Gateway", "Spring Boot", "Приём заявок по API")
+  Container(logic, "Логика обработки заявок", "Java", "Обработка, маршрутизация")
+  ContainerDb(db, "БД заявок", "MS SQL / Oracle", "Хранение статусов заявок")
+}
+
+System_Boundary(abs, "АБС") {
+  Container(absCore, "Процессинг депозитов", "Core banking", "Создание и подтверждение депозитов")
+  ContainerDb(absDb, "БД АБС", "Oracle", "Клиенты, депозиты")
+}
+
+System(xls, "XLS-хранилище ставок", "Excel/SMB", "Обновляемые вручную ставки")
+System(sms, "СМС-шлюз", "SMS API", "Информирование клиентов")
+
+Rel(client, ui, "Работает с")
+Rel(ui, frontend, "HTTP")
+Rel(frontend, depositModule, "HTTP")
+Rel(depositModule, api, "POST заявок")
+Rel(api, logic, "Обработка заявки")
+Rel(logic, db, "Сохраняет данные")
+Rel(logic, xls, "Получает ставки")
+Rel(logic, sms, "Отправляет уведомления")
+Rel(logic, absCore, "Запрос на открытие")
+Rel(absCore, absDb, "Читает/пишет")
+
+Rel(backOffice, absCore, "Подтверждение заявки")
+
+@enduml
