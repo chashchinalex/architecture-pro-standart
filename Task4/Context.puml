@@ -1,0 +1,55 @@
+@startuml
+title Клиент-Банк — Контекстная диаграмма (распределённая)
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+Person(individual, "Физическое лицо", "Просматривает предложения, подает заявку")
+Person(accountHolder, "Клиент Банка", "Использует онлайн-сервисы банка")
+Person(callAgent, "Оператор Центра", "Обрабатывает входящие заявки")
+Person(externalAgent, "Внешний Оператор", "Консультирует клиентов")
+Person(branchStaff, "Сотрудник отделения", "Работает с заявками офлайн")
+
+System(corePlatform, "Цифровой Банк", "Онлайн-заявки, получение предложений")
+System(webPortal, "Информационный Сайт", "Общие сведения о продуктах банка")
+System(coreSystem, "Банковская система", "Обработка заявок и предложений")
+
+System_Ext(rateArchive, "Хранилище ставок")
+System_Ext(voiceService, "Телефония (внутренняя)")
+System_Ext(voicePartner, "Партнерский контакт-центр")
+System_Ext(smsService, "СМС-шлюз")
+
+
+Lay_L(individual, webPortal)
+Lay_L(accountHolder, corePlatform)
+Lay_L(branchStaff, coreSystem)
+
+Lay_R(corePlatform, coreSystem)
+Lay_R(coreSystem, smsService)
+Lay_R(coreSystem, rateArchive)
+
+Lay_D(callAgent, coreSystem)
+Lay_D(externalAgent, voicePartner)
+
+Lay_D(webPortal, voiceService)
+
+
+Rel(individual, webPortal, "Смотрит предложения, отправляет заявку")
+Rel(individual, voiceService, "Получает консультацию")
+Rel(individual, coreSystem, "Обслуживание в офисе")
+Rel(accountHolder, corePlatform, "Подает заявку, получает ответ")
+Rel(branchStaff, coreSystem, "Оформляет обращение клиента в отделении")
+
+Rel(callAgent, coreSystem, "Работает с заявками")
+Rel(callAgent, rateArchive, "Загружает ставки")
+Rel(callAgent, voiceService, "Связь с клиентом")
+
+Rel(externalAgent, rateArchive, "Получает актуальные ставки")
+Rel(externalAgent, voicePartner, "Консультирует клиентов")
+
+Rel(coreSystem, corePlatform, "Данные по заявкам и предложениям")
+Rel(coreSystem, smsService, "Информирование о статусе")
+Rel(coreSystem, rateArchive, "Выгрузка ставок (ежедневно)")
+
+Rel(webPortal, voiceService, "Передача клиентских обращений")
+
+@enduml

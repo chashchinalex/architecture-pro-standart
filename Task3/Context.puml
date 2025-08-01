@@ -1,0 +1,33 @@
+
+@startuml Context
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_TOP_DOWN()
+title C4 - Контекстная диаграмма: Открытие депозитов (MVP)
+
+Person(newClient, "Новый клиент", "Подаёт заявку на сайте")
+Person(existingClient, "Клиент банка", "Использует интернет-банк")
+Person(callCenter, "Менеджер кол-центра", "Обрабатывает заявки")
+Person(backOffice, "Менеджер бэк-офиса", "Подтверждает условия в АБС")
+
+System(website, "Веб-сайт", "Отображает депозиты и принимает заявки")
+System(internetBank, "Интернет-банк", "Подача заявок и отображение персональных условий")
+System(depositService, "Сервис заявок на депозиты", "Обрабатывает заявки, интегрируется с другими системами")
+System(abs, "АБС", "Обработка и открытие депозитов")
+System(sms, "СМС-шлюз", "Отправка уведомлений клиентам")
+System(xls, "Хранилище ставок (XLS)", "Файлы с актуальными ставками по депозитам")
+
+Rel(newClient, website, "Подача заявки", "HTTPS")
+Rel(website, depositService, "Передаёт заявки", "REST/HTTPS")
+Rel(depositService, callCenter, "Передаёт заявку", "внутренняя система")
+Rel(callCenter, newClient, "Звонит", "телефон")
+
+Rel(existingClient, internetBank, "Просматривает и подаёт заявку", "HTTPS")
+Rel(internetBank, depositService, "Передаёт заявку", "REST/HTTPS")
+
+Rel(depositService, abs, "Передаёт подтверждение/открытие", "внутренний API")
+Rel(depositService, sms, "Отправка СМС", "SMS API")
+Rel(depositService, xls, "Чтение ставок", "XLS/репозиторий")
+Rel(backOffice, abs, "Подтверждает условия", "интерфейс АБС")
+
+@enduml
