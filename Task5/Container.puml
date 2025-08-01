@@ -1,0 +1,82 @@
+@startuml
+title Клиент-Банк Container Diagram
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(person, "Потенциальный Клиент", "Создает заявку")
+Person(customer, "Клиент", "Создает заявку")
+Person(manager, "Сотрудник офиса", "Создает заявку")
+
+Container_Boundary(bank, "Банк клиент") {
+    Container(bWebApp, "Web Application", "React", "ui")
+    Container(bGateway, "API Gateway", "", "proxy")
+    Container(bcore, "ASP.NET", "Данные по условиям, заявкам, и тд ")
+    Container(bdatabase, "Database", "MS SQL.", "Сохранение данных")
+}
+
+Container_Boundary(abc, "АБС") {
+    Container(webApp, "Web Application", "React", "ui")
+    Container(gateway, "API Gateway", "", "proxy")
+    Container(core, "Ядро", "Delphi",  "Данные об условиях кредитов, данные по заявкам")
+    Container(requests, "Данные по заявкам", "Данные по заявки")
+    Container(database, "Database", "Oracle", "Сохранение данных профиля")
+}
+
+Container_Boundary(site, "Сайт банка") {
+    Container(webApp, "Web Application", "React", "ui")
+    Container(homePage, "Ядро", "PHP", "Данные о предложениях, условиях кредитов")
+    Container(hdatabase, "Database", "Сохранение данных ")
+}
+
+Container_Boundary(creditPipeline, "Кредитный конвеер") {
+    Container(cwebApp, "Web Application", "ui")
+    Container(credit, "Ядро", "Camunda", "Данные о предложениях, условиях кредитов")
+    Container(cdatabase, "Database", "Oracle", "Сохранение данных ")
+}
+
+Container_Boundary(scoringSystem, "Система кредитного скоринга") {
+    Container(swebApp, "Web Application",  "ui")
+    Container(scoring, "Ядро", "Python", "Данные о предложениях, условиях кредитов")
+    Container(sdatabase, "Database", "PostgreSQL", "Сохранение данных ")
+}
+
+System_Ext(sms, "СМС-шлюз")
+System_Ext(bureau,  "Бюро кредитных историй")
+System_Ext(kafka, "Кафка")
+
+Rel(customer, bWebApp, "Создает заявку")
+Rel(manager, webApp, "Создает заявку, ведет заявку")
+Rel(manager, cwebApp, "Обработка заявок")
+Rel(person, homePage, "Выбирает вариант кредита, создает заявку")
+
+
+Rel(bWebApp, bGateway, "Проксирование запросов")
+Rel(webApp, gateway, "Проксирование запросов")
+Rel(bGateway, bcore, "Данные по предложениям")
+
+Rel(requests, database, "Сохранение заявок")
+Rel(bcore, bdatabase, "Данные о персональных предложениях")
+
+Rel(bGateway, gateway, "Проксирование запросов по получению данных заявок")
+
+Rel(gateway, core, "Ведет заявки")
+Rel(core, requests, "Создание заявок")
+Rel(core, database, "Данные об условиях кредитов, данные по заявкам")
+
+Rel(homePage, kafka, "Данные заявок")
+Rel(bGateway, kafka, "Данные заявок, персональные предложения")
+Rel(kafka, gateway, "Данные заявок")
+
+Rel(homePage, hdatabase, "Сохранение данных")
+
+Rel(swebApp, scoring, "Рейтинг клиентов, данные скоринга")
+Rel(scoring, bureau, "Кредитная история")
+Rel(scoring, sdatabase, "Сохранение рейтинга")
+
+Rel(cwebApp, credit, "Рейтинг клиентов, данные скоринга")
+Rel(credit, scoring, "Кредитная история")
+Rel(credit, cdatabase, "Сохранение рейтинга")
+Rel(credit, kafka, "Персональные предложения для клиентов")
+Rel(gateway, sms, "Информирование клиента о статусе заявки")
+
+@enduml

@@ -1,0 +1,70 @@
+@startuml
+title Диаграмма контейнеров: Инфраструктура обслуживания клиентов
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(visitor, "Посетитель сайта", "Изучает условия, оставляет обращение")
+Person(client, "Клиент банка", "Оставляет заявку через цифровую платформу")
+Person(callOperator, "Оператор контакт-центра", "Работает с заявками, консультирует")
+Person(remoteAgent, "Внешний оператор", "Консультирует клиентов по условиям")
+Person(branchEmployee, "Сотрудник отделения", "Создает заявки на обслуживание")
+
+Container_Boundary(clientPlatform, "Цифровая платформа банка") {
+  Container(clientWeb, "Пользовательский интерфейс", "React", "Выбор вкладов, подача заявок")
+  Container(clientGateway, "API-шлюз", "", "Проксирование запросов")
+  Container(clientBackend, "Сервисная логика", "ASP.NET", "Обработка заявок, предоставление условий")
+  Container(clientDB, "База данных", "MS SQL", "Хранение данных о клиентах и заявках")
+}
+
+Container_Boundary(bankingSystem, "Основная банковская система") {
+  Container(staffWeb, "Интерфейс сотрудников", "React", "Работа с клиентскими заявками")
+  Container(coreGateway, "Шлюз внутренних сервисов", "", "Маршрутизация запросов")
+  Container(coreLogic, "Ядро системы", "Delphi", "Работа с заявками, условия депозитов, персональные предложения")
+  Container(requestRepo, "Хранилище заявок", "", "Фиксация и обработка обращений")
+  Container(profileStorage, "Профильная база", "Oracle", "Данные для расчета предложений")
+}
+
+Container_Boundary(bankSite, "Официальный сайт банка") {
+  Container(siteInterface, "Фронтенд сайта", "React", "Отображение информации по продуктам")
+  Container(siteBackend, "Контент-сервис", "PHP", "Предоставляет условия вкладов")
+  Container(siteDB, "База данных сайта", "", "Хранение обращений с сайта")
+}
+
+System_Ext(rateStorage, "Хранилище ставок (S3)")
+System_Ext(telephonySystem, "Система телефонии")
+System_Ext(smsGateway, "СМС-платформа")
+System_Ext(remoteCallCenter, "Внешний колл-центр")
+System_Ext(eventBus, "Kafka")
+
+
+Rel(visitor, siteInterface, "Изучает условия и акции")
+Rel(visitor, telephonySystem, "Получает консультацию")
+Rel(client, clientWeb, "Оставляет заявку, выбирает условия")
+Rel(client, remoteCallCenter, "Обращается за консультацией")
+Rel(callOperator, staffWeb, "Обрабатывает заявки")
+Rel(branchEmployee, staffWeb, "Создает обращения в офисе")
+Rel(callOperator, rateStorage, "Загружает актуальные ставки")
+Rel(remoteAgent, rateStorage, "Получает ставки")
+Rel(remoteAgent, remoteCallCenter, "Консультирует клиента")
+
+
+Rel(clientWeb, clientGateway, "Запросы клиента")
+Rel(clientGateway, clientBackend, "Обработка заявок")
+Rel(clientBackend, clientDB, "Сохраняет и извлекает данные")
+
+Rel(clientGateway, coreGateway, "Запрос данных о заявках и условиях")
+Rel(staffWeb, coreGateway, "Доступ к заявкам")
+Rel(coreGateway, coreLogic, "Вызов бизнес-логики")
+Rel(coreLogic, requestRepo, "Хранение заявок")
+Rel(coreLogic, profileStorage, "Доступ к профилю клиента")
+Rel(coreLogic, eventBus, "Публикация персональных условий")
+Rel(clientBackend, eventBus, "Обмен персональными предложениями")
+Rel(coreGateway, smsGateway, "Уведомление клиента по SMS")
+
+
+Rel(siteInterface, siteBackend, "Запрос условий вкладов")
+Rel(siteBackend, siteDB, "Сохраняет обращения")
+Rel(siteBackend, telephonySystem, "Передает обращения операторам")
+Rel(siteInterface, rateStorage, "Отображает ставки депозитов (ежедневно)")
+
+@enduml
